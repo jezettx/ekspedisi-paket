@@ -1,0 +1,48 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.ekspedisipaket.service;
+
+import java.util.List;
+
+import com.mycompany.ekspedisipaket.layanan.BisaDiasuransikan;
+import com.mycompany.ekspedisipaket.layanan.LayananPengiriman;
+import com.mycompany.ekspedisipaket.model.Pengiriman;
+import com.mycompany.ekspedisipaket.repository.RiwayatRepository;
+
+/**
+ *
+ * @author YodhaAce
+ */
+public class PengirimanService {
+    private final RiwayatRepository repository;
+
+    public PengirimanService(RiwayatRepository repository) {
+        this.repository = repository;
+    }
+
+    public Pengiriman kirim(String penerima, double berat, LayananPengiriman layanan, boolean pakaiAsuransi) {
+        if (penerima == null || penerima.isBlank()) {
+            throw new IllegalArgumentException("Nama penerima Wajib diisi.");
+        }
+        if (!Double.isFinite(berat) || berat <= 0) {
+            throw new IllegalArgumentException("Berat paket harus lebih dari 0.");
+        }
+        double total = layanan.hitungOngkir(berat);
+
+        boolean asuransiDipakai = false;
+        if (pakaiAsuransi && layanan instanceof BisaDiasuransikan asuransi) {
+            BisaDiasuransikan layananAsuransi = (BisaDiasuransikan) layanan;
+            total += layananAsuransi.getBiayaAsuransi();
+            asuransiDipakai = true;
+        }
+        Pengiriman pengiriman = new Pengiriman(penerima.trim(), layanan.getNama(), berat, asuransiDipakai, total);
+        repository.simpanRiwayat(pengiriman);
+        return pengiriman;
+    }
+
+    public List<Pengiriman> ambilRiwayat() {
+        return repository.ambilSemua();
+    }
+}
